@@ -39,8 +39,8 @@ class BitAddr:
         key_raw = self._generate_privkey_raw()
         pubkey_raw = self._generate_pubkey_raw(key_raw)
 
-        wif = self._generate_privkey_wif(key_raw)
-        address = self._generate_address(pubkey_raw)
+        wif = self._generate_privkey_wif(key_raw, self.BTC_WIF_PREFIX)
+        address = self._generate_address(pubkey_raw, self.BTC_ADDRESS_PREFIX)
 
         return (address, wif)
 
@@ -77,12 +77,12 @@ class BitAddr:
         return pubkey_bytes
 
     # Function for generating the WIF private key
-    def _generate_privkey_wif(self, key_raw):
+    def _generate_privkey_wif(self, key_raw, wif_prefix):
 
         import base58
 
         # Generate the private key
-        wif_prefix_btc_bytes = self.BTC_WIF_PREFIX.to_bytes(1, self.ENDIAN)
+        wif_prefix_btc_bytes = wif_prefix.to_bytes(1, self.ENDIAN)
 
         privkey_prefix_bytes = wif_prefix_btc_bytes + key_raw
 
@@ -95,7 +95,7 @@ class BitAddr:
         return wif
 
     # Function for generating a Bitcoin address
-    def _generate_address(self, pubkey_raw):
+    def _generate_address(self, pubkey_raw, address_prefix):
 
         from ripemd import ripemd160
         import base58
@@ -103,7 +103,7 @@ class BitAddr:
         round1 = adafruit_hashlib.sha256(pubkey_raw).digest()
         round2 = ripemd160.ripemd160(round1)
 
-        with_prefix = self.BTC_ADDRESS_PREFIX.to_bytes(1, self.ENDIAN) + round2
+        with_prefix = address_prefix.to_bytes(1, self.ENDIAN) + round2
 
         checksum_round1 = adafruit_hashlib.sha256(with_prefix).digest()
         checksum_round2 = adafruit_hashlib.sha256(checksum_round1).digest()
